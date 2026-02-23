@@ -91,6 +91,15 @@ library LibRegistry {
 
     /// @notice Find the canonical registry for `name`.
     ///
+    /// @dev `name` is canonical if it's ancestors are canonical and share parential suffixes:
+    /// eg.        Canonical    not-Canonical     not-Canonical
+    ///            =========    =============     =============
+    ///     abc.sub.test.eth          abc.eth      a.b.test.eth
+    ///         sub.test.eth            > xyz <      b.test.eth
+    ///             test.eth            <root>       > nick.eth <
+    ///                  eth                                eth
+    ///                <root>                             <root>
+    ///
     /// @param rootRegistry The root ENS registry.
     /// @param name The DNS-encoded name to verify.
     /// @param offset The offset into `name` to start verification.
@@ -114,9 +123,9 @@ library LibRegistry {
             if (address(child) != address(0)) {
                 bytes memory childName = child.getCanonicalName();
                 if (
-                    childName.length > 0 &&
+                    name.length >= childName.length &&
                     //NameCoder.namehash(childName, 0) == NameCoder.namehash(name, offset)
-                    keccak256(childName) == BytesUtils.keccak(name, offset, name.length - offset)
+                    keccak256(childName) == BytesUtils.keccak(name, offset, name.length - offset) // must have same suffix
                 ) {
                     return child;
                 }
