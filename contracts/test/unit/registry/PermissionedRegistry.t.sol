@@ -84,7 +84,7 @@ contract PermissionedRegistryTest is Test, ERC1155Holder {
         assertEq(registry.getCanonicalName(), name);
     }
 
-    function test_setParent_notAuthorized() external {
+    function test_setCanonicalName_notAuthorized() external {
         vm.expectRevert(
             abi.encodeWithSelector(
                 IEnhancedAccessControl.EACUnauthorizedAccountRoles.selector,
