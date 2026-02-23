@@ -30,7 +30,7 @@ ENSv2 transitions from a flat registry to a hierarchical system that enables:
 - Each registry is responsible for one name and its direct subdomains
 - Registries implement ERC1155, treating subdomains as NFTs
 - Must implement the `IRegistry` interface for standard resolution
-- All registries store data in the singleton `RegistryDatastore` for efficient storage access
+- Each registry stores its own data directly via an internal `_entries` mapping
 
 **Root Registry** → **TLD Registries** (.eth, .box, etc.) → **Domain Registries** (example.eth) → **Subdomain Registries** (sub.example.eth)
 
@@ -201,31 +201,6 @@ interface IRegistry is IERC1155Singleton {
 }
 ```
 
-#### `RegistryDatastore` - Singleton Storage
-
-[src/registry/RegistryDatastore.sol](src/registry/RegistryDatastore.sol)
-
-Universal storage contract for all registries.
-
-**Key Functions**:
-
-- `getEntry(address registry, uint256 tokenId)`: Fetch an entry
-- `setEntry(address registry, uint256 id, Entry calldata entry)`: Set an entry
-- `setSubregistry(uint256 tokenId, address subregistry)`: Update subregistry (caller must be registry)
-- `setResolver(uint256 tokenId, address resolver)`: Update resolver
-
-**Storage Structure**:
-
-```solidity
-struct Entry {
-  uint64 expiry; // Timestamp when the name expires (0 = never expires)
-  uint32 tokenVersionId; // Version counter for token regeneration (incremented on burn/remint)
-  address subregistry; // Registry contract for subdomains under this name
-  uint32 eacVersionId; // Version counter for access control changes (incremented on permission updates)
-  address resolver; // Resolver contract for name resolution data
-}
-```
-
 #### `PermissionedRegistry` - Standard Implementation
 
 [src/registry/PermissionedRegistry.sol](src/registry/PermissionedRegistry.sol)
@@ -236,6 +211,26 @@ Feature-complete registry with role-based access control:
 - Enhanced Access Control with 32 roles
 - Expiry management
 - Metadata support (name, description, image)
+- Direct internal storage via `_entries` mapping
+
+**Key Functions**:
+
+- `getEntry(uint256 anyId)`: Fetch an entry by labelhash, token ID, or resource
+- `getNameData(string label)`: Fetch token ID and entry for a label
+- `setSubregistry(uint256 anyId, IRegistry registry)`: Update subregistry
+- `setResolver(uint256 anyId, address resolver)`: Update resolver
+
+**Storage Structure** (defined in `IPermissionedRegistry`):
+
+```solidity
+struct Entry {
+  uint32 eacVersionId;    // Version counter for access control changes (incremented on permission updates)
+  uint32 tokenVersionId;  // Version counter for token regeneration (incremented on burn/remint)
+  IRegistry subregistry;  // Registry contract for subdomains under this name
+  uint64 expiry;          // Timestamp when the name expires (0 = never expires)
+  address resolver;       // Resolver contract for name resolution data
+}
+```
 
 #### `ERC1155Singleton` - Gas-Optimized NFT
 
