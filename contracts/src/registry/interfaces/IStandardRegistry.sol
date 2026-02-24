@@ -41,7 +41,8 @@ interface IStandardRegistry is IRegistry {
     // Functions
     ////////////////////////////////////////////////////////////////////////
 
-    /// @notice Registers a new name.
+    /// @notice Register `label` for `owner`.
+    ///
     /// @param label The label to register.
     /// @param owner The address of the owner of the name.
     /// @param registry The registry to set as the name.

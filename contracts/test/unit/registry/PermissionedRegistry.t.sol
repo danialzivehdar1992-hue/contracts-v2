@@ -230,12 +230,7 @@ contract PermissionedRegistryTest is Test, ERC1155Holder {
         this._reserve();
         registry.grantRootRoles(RegistryRolesLib.ROLE_REGISTRAR, actor);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                IEnhancedAccessControl.EACUnauthorizedAccountRoles.selector,
-                registry.ROOT_RESOURCE(),
-                RegistryRolesLib.ROLE_RESERVE_REGISTRAR,
-                actor
-            )
+            abi.encodeWithSelector(IPermissionedRegistry.NameAlreadyReserved.selector, testLabel)
         );
         vm.prank(actor);
         this._register();

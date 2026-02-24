@@ -121,6 +121,9 @@ contract PermissionedRegistry is
     }
 
     /// @inheritdoc IStandardRegistry
+    /// @dev If `AVAILABLE` requires `ROLE_REGISTRAR` on root.
+    ///      If `RESERVED` requires `ROLE_RESERVE_REGISTRAR` on root.
+    ///      If `owner` is null (roleBitmap must be 0), reserves instead of registers.
     function register(
         string memory label,
         address owner,
@@ -139,18 +142,18 @@ contract PermissionedRegistry is
         address prevOwner = super.ownerOf(tokenId);
         address sender = _msgSender();
         if (_isExpired(entry.expiry)) {
-            // label is AVAILABLE
             _checkRoles(ROOT_RESOURCE, RegistryRolesLib.ROLE_REGISTRAR, sender);
         } else {
             if (prevOwner != address(0)) {
                 revert NameAlreadyRegistered(label); // cannot overwrite REGISTERED
-            } else if (owner == address(0)) {
-                revert NameAlreadyReserved(label); // cannot reserve RESERVED
+            } else if (
+                owner == address(0) ||
+                !hasRoles(ROOT_RESOURCE, RegistryRolesLib.ROLE_RESERVE_REGISTRAR, sender)
+            ) {
+                revert NameAlreadyReserved(label); // cannot reserve/register RESERVED
             } else if (roleBitmap != 0) {
                 revert EACCannotGrantRoles(ROOT_RESOURCE, roleBitmap, sender);
             }
-            // label is RESERVED
-            _checkRoles(ROOT_RESOURCE, RegistryRolesLib.ROLE_RESERVE_REGISTRAR, sender);
         }
         if (prevOwner != address(0)) {
             _burn(prevOwner, tokenId, 1);
@@ -340,30 +343,6 @@ contract PermissionedRegistry is
     ////////////////////////////////////////////////////////////////////////
     // Internal Functions
     ////////////////////////////////////////////////////////////////////////
-
-    /**
-     * @dev 
-
-    /// @dev If `AVAILABLE` requires `ROLE_REGISTRAR` on root.
-    ///      If `RESERVED` requires `ROLE_RESERVE_REGISTRAR` on root.
-
-     * @param label The label to register.
-     * @param owner The owner of the registered name or null if reserved.
-     * @param registry The registry to use for the name.
-     * @param resolver The resolver to set for the name.
-     * @param roleBitmap The roles to grant to the owner.
-     * @param expiry The expiration time of the name.
-     * @return tokenId The token ID of the registered name.
-     */
-    function _register(
-        string memory label,
-        address owner,
-        IRegistry registry,
-        address resolver,
-        uint256 roleBitmap,
-        uint64 expiry,
-        address sender
-    ) internal virtual returns (uint256 tokenId) {}
 
     /**
      * @dev Override the base registry _update function to transfer the roles to the new owner when the token is transferred.

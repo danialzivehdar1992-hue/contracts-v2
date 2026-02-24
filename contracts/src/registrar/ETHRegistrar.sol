@@ -129,9 +129,6 @@ contract ETHRegistrar is IETHRegistrar, EnhancedAccessControl {
         if (owner == address(0)) {
             revert InvalidOwner();
         }
-        if (!isAvailable(label)) {
-            revert NameNotAvailable(label);
-        }
         _consumeCommitment(
             makeCommitment(label, owner, secret, subregistry, resolver, duration, referrer)
         ); // reverts if no commitment
@@ -144,7 +141,7 @@ contract ETHRegistrar is IETHRegistrar, EnhancedAccessControl {
             resolver,
             REGISTRATION_ROLE_BITMAP,
             uint64(block.timestamp) + duration
-        );
+        ); // reverts if not available
         emit NameRegistered(
             tokenId,
             label,
@@ -189,7 +186,7 @@ contract ETHRegistrar is IETHRegistrar, EnhancedAccessControl {
 
     /// @inheritdoc IETHRegistrar
     /// @dev Does not check if normalized or valid.
-    function isAvailable(string memory label) public view returns (bool) {
+    function isAvailable(string memory label) external view returns (bool) {
         return REGISTRY.getStatus(LibLabel.id(label)) == IPermissionedRegistry.Status.AVAILABLE;
     }
 

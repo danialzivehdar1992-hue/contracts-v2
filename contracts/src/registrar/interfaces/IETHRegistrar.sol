@@ -67,10 +67,6 @@ interface IETHRegistrar is IRentPriceOracle {
     // Errors
     ////////////////////////////////////////////////////////////////////////
 
-    /// @notice `label is not AVAILABLE.
-    /// @dev Error selector: `0x477707e8`
-    error NameNotAvailable(string label);
-
     /// @notice `label` is AVAILABLE.
     /// @dev Error selector: `0xf7681f14`
     error NameIsAvailable(string label);
