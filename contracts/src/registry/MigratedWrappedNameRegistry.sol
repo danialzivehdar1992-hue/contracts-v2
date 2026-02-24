@@ -252,7 +252,7 @@ contract MigratedWrappedNameRegistry is
             );
 
             // Complete name registration in new registry
-            register(
+            super.register(
                 label,
                 migrationDataArray[i].transferData.owner,
                 IRegistry(subregistry),
