@@ -192,11 +192,13 @@ Standard interface all registries must implement:
 
 ```solidity
 interface IRegistry is IERC1155Singleton {
-  event NameRegistered(uint256 indexed tokenId, string label, uint64 expiry, address registeredBy);
-  event ExpiryUpdated(uint256 indexed tokenId, uint64 newExpiry, address changedBy);
-  event SubregistryUpdated(uint256 indexed tokenId, IRegistry subregistry);
-  event ResolverUpdated(uint256 indexed tokenId, address resolver);
-  event TokenRegenerated(uint256 indexed oldTokenId, uint256 indexed newTokenId, uint256 resource);
+  event NameRegistered(uint256 indexed tokenId, bytes32 indexed labelHash, string label, address owner, uint64 expiry, address indexed sender);
+  event NameReserved(uint256 indexed tokenId, bytes32 indexed labelHash, string label, uint64 expiry, address indexed sender);
+  event NameUnregistered(uint256 indexed tokenId, address indexed sender);
+  event ExpiryUpdated(uint256 indexed tokenId, uint64 newExpiry, address indexed sender);
+  event SubregistryUpdated(uint256 indexed tokenId, IRegistry subregistry, address indexed sender);
+  event ResolverUpdated(uint256 indexed tokenId, address resolver, address indexed sender);
+  event TokenRegenerated(uint256 indexed oldTokenId, uint256 indexed newTokenId);
 
   function getSubregistry(string calldata label) external view returns (IRegistry);
   function getResolver(string calldata label) external view returns (address);
