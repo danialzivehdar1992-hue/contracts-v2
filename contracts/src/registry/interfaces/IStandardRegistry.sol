@@ -5,7 +5,7 @@ import {IRegistry} from "./IRegistry.sol";
 
 /// @title IStandardRegistry
 /// @notice A tokenized registry.
-/// @dev Interface selector: `0xeb138d53`
+/// @dev Interface selector: `0xb177bd70`
 interface IStandardRegistry is IRegistry {
     ////////////////////////////////////////////////////////////////////////
     // Errors
